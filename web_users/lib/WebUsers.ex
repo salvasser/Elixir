@@ -61,19 +61,19 @@ defmodule WebUsers do
         "get-users" ->
           cond do
             term == "older" ->
-              "<h1>User data</h1><br>" <> "<table>" <> output(older_than(pid, value)) <> "</table>"
+              "<h1>User data</h1><br>" <> output(older_than(pid, value))
             term == "younger" -> 
-              "<h1>User data</h1><br>" <> "<table>" <> output(younger_than(pid, value)) <> "</table>"
+              "<h1>User data</h1><br>" <> output(younger_than(pid, value))
             true ->
-              "<h1>User data</h1><br>" <> "<table>" <> output(all_users(pid)) <> "</table>"
+              "<h1>User data</h1><br>" <> output(all_users(pid))
           end
         "get-user" ->
           if (Enum.member?(idList, value)) or (Enum.member?(nameList, value)) do
             cond do
               term == "id" ->
-                "<h1>User " <> to_string(value) <> " data</h1><br>" <> "<table>" <> output(one_user(pid, value)) <> "</table>"
+                "<h1>User " <> to_string(value) <> " data</h1><br>" <> output(one_user(pid, value))
               term == "name" ->
-                "<h1>User " <> to_string(value) <> " data</h1><br>" <> "<table>" <> output(find_by_name(pid, value)) <> "</table>"
+                "<h1>User " <> to_string(value) <> " data</h1><br>" <> output(find_by_name(pid, value))
               true ->
                 "<h3>Error query after (get-user). Enter (name) or (id)</h3>"
             end
@@ -96,18 +96,21 @@ defmodule WebUsers do
 
   end 
 
-
-  defp output([[id, name, phone, age], data]) do
-    header = ["<tr>","<td>","<h4>",id,"</h4>","</td>","<td>","<h4>",name,"</h4>","</td>","<td>","<h4>",phone,"</h4>","</td>","<td>","<h4>",age,"</h4>","</td>","</tr>"]
-    output_data(data, header, [])
+  defp output([key, value]) do 
+    #mirrorKey = Enum.reverse(key)
+    #mirrorValue = Enum.reverse(value)
+    output(value, key, [])
+  end
+  
+  defp output([], _, acc) do
+    [lineBreak, _ | tailAcc] = acc   #delete extra comma
+    "[" <> to_string(Enum.reverse([lineBreak] ++ tailAcc)) <> "]"
   end
 
-    defp output_data([], header, acc) do
-      to_string(header ++ Enum.reverse(acc))
-    end
-    defp output_data([[headId, headName, headPhone, headAge] | tailData], header, acc) do
-      output_data(tailData, header, ["</tr>","</td>",Integer.to_string(headAge),"<td>","</td>",headPhone,"<td>","</td>",headName,"<td>","</td>",headId,"<td>","<tr>" | acc])
-    end
+  defp output([[headId, headName, headPhone, headAge] | tailData], [id, name, phone, age], acc) do
+    output(tailData, [id, name, phone, age], ["<br>", ",", "}", Integer.to_string(headAge), ": ", "&#34", age, "&#34", "<br>", ",", headPhone, ": ", "&#34", phone, "&#34", "<br>", ",", "&#34", headName, "&#34", ": ", "&#34", name, "&#34", "<br>", ",", headId, ": ", "&#34", id, "&#34", "{", "<br>" | acc])
+  end
+
 
   defp splitting(msg) do
     String.split(to_string(msg), [" /", " ", "/"])
@@ -123,5 +126,36 @@ defmodule WebUsers do
         [:error, ""]
       end
   end
+
+
+
+  defp sql_start() do
+    {:ok, pid} = MyXQL.start_link(username: "root", password: "password", protocol: :tcp)
+    MyXQL.query!(pid, "CREATE DATABASE IF NOT EXISTS people")
+    {:ok, pid} = MyXQL.start_link(username: "root", password: "password", database: "people", protocol: :tcp) 
+    MyXQL.query!(pid, "CREATE TABLE IF NOT EXISTS data (id VARCHAR(4), name VARCHAR(255), phone VARCHAR(4), age INT)")
+    pid
+  end
+
+  def existing_users() do
+    pid = sql_start()
+    {:ok, data} = File.read("resources/users.dat")
+    listOfData = String.split(data, [", ", "\n"])
+    read(listOfData, pid)
+  end
+
+    defp read([], _) do
+      :ok
+    end
+    defp read([headName, headPhone, headAge, headId | tailData], pid) do
+      MyXQL.query!(pid, "INSERT INTO data (id, name, phone, age) VALUES (?,?,?,?)", [headId, headName, headPhone, String.to_integer(headAge)])
+      read(tailData, pid)
+    end
+ 
+  def delete_data() do
+    pid = sql_start()
+    MyXQL.query!(pid, "DROP DATABASE people")
+  end
+
 
 end
