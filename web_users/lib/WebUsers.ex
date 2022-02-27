@@ -96,21 +96,18 @@ defmodule WebUsers do
 
   end 
 
-  defp output([key, value]) do 
-    #mirrorKey = Enum.reverse(key)
-    #mirrorValue = Enum.reverse(value)
-    output(value, key, [])
+  defp output([_key, value]) do 
+    output_data(value, [])
   end
   
-  defp output([], _, acc) do
-    [lineBreak, _ | tailAcc] = acc   #delete extra comma
-    "[" <> to_string(Enum.reverse([lineBreak] ++ tailAcc)) <> "]"
+  defp output_data([], acc) do
+    {:ok, result} = JSON.encode(Enum.reverse(acc))
+    result
   end
 
-  defp output([[headId, headName, headPhone, headAge] | tailData], [id, name, phone, age], acc) do
-    output(tailData, [id, name, phone, age], ["<br>", ",", "}", Integer.to_string(headAge), ": ", "&#34", age, "&#34", "<br>", ",", headPhone, ": ", "&#34", phone, "&#34", "<br>", ",", "&#34", headName, "&#34", ": ", "&#34", name, "&#34", "<br>", ",", headId, ": ", "&#34", id, "&#34", "{", "<br>" | acc])
+  defp output_data([[headId, headName, headPhone, headAge] | tailData], acc) do
+    output_data(tailData, [[id: headId, name: headName, phone: headPhone, age: Integer.to_string(headAge)] | acc])
   end
-
 
   defp splitting(msg) do
     String.split(to_string(msg), [" /", " ", "/"])
