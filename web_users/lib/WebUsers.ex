@@ -115,7 +115,7 @@ defmodule WebUsers do
   defp sql_start() do
     #{:ok, pid} = MyXQL.start_link(username: "root", password: "password", protocol: :tcp)
     #MyXQL.query!(pid, "CREATE DATABASE IF NOT EXISTS people")
-    {:ok, pid} = MyXQL.start_link(username: "root", password: "123456", host: "db", database: "erlang", protocol: :tcp)
+    {:ok, pid} = MyXQL.start_link(username: "root", password: "123456", host: "host", database: "erlang", protocol: :tcp)
     :erlang.register(:db, pid)
     MyXQL.query!(:db, "CREATE TABLE IF NOT EXISTS data (id VARCHAR(4), name VARCHAR(255), phone VARCHAR(4), age INT)")
   end

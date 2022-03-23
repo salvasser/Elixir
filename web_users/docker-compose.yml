@@ -19,7 +19,7 @@ services:
     ports:
       - 8090:8090
     environment:
-      MYSQL_HOST: db
+      MYSQL_HOST: host
     links:
       - db
 
