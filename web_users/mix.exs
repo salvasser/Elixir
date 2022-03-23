@@ -24,7 +24,8 @@ defmodule WebUsers.MixProject do
     	{:myxql, "~> 0.6.0"},
 	{:cowboy, "~> 2.9.0"},
 	{:plug, "~> 1.13.3"},
-	{:json, "~> 1.3.0"}
+	{:json, "~> 1.3.0"},
+	{:dialyxir, "~> 1.0", only: [:dev]}
 	
       # {:dep_from_hexpm, "~> 0.3.0"},
       # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"}

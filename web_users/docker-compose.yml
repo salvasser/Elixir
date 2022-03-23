@@ -1,0 +1,28 @@
+version: '3'
+
+services:
+
+  db:
+    image: mysql
+    container_name: sql_iex
+    environment:
+      #MYSQL_USER: root
+      MYSQL_ROOT_PASSWORD: 123456
+      MYSQL_DATABASE: erlang
+    ports:
+      - 3306:3306
+
+  app:
+    tty: true
+    image: elixir
+    container_name: iex
+    ports:
+      - 8090:8090
+    environment:
+      MYSQL_HOST: db
+    links:
+      - db
+
+
+
+
